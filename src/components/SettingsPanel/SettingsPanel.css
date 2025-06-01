@@ -1,0 +1,13 @@
+.settings-panel {
+  width: 640px;
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 50px;
+}
+
+.settings-panel__label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
