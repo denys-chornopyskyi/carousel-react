@@ -11,34 +11,50 @@ interface CarouselProps extends settingsProps {
 const Carousel = ({imageUrls, settings, setSettings}: CarouselProps) => {
   const [imageIndex, setImageIndex] = useState<number>(0);
   const [renderQueue, setRenderQueue] = useState<string[]>(
-    [imageUrls[imageIndex]])
-  const [isTranslated, setIsTranslated] = useState<boolean>(false)
+    [imageUrls[imageIndex], imageUrls[imageIndex + 1]])
 
 
   const currentTarget = useRef<HTMLImageElement>(null)
-  const isNeedTranslate = useRef<boolean>(false)
 
 
   const showPrevImage = () => {
+    let i = 0
     setImageIndex((index) => {
-      if (index === 0) return imageUrls.length - 1;
-      return index - 1;
+      if (index === 0) {
+        i = imageUrls.length - 1
+      } else {
+        i = index - 1
+      }
+      return i;
     });
+    setRenderQueue((prevState) => {
+      const tmp = [...prevState];
+      for (let j = 0; j < imageUrls.length; j++) {
+        if (j === i) {
+          tmp[j] = imageUrls[j]
+          console.log(j)
+        }
+      }
+      console.log(tmp)
+
+      return tmp
+    })
+
   };
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) {
-        setRenderQueue((prevState) => prevState.slice(1))
-        setSettings({...settings, animation: false})
-        setIsTranslated(false)
-        isNeedTranslate.current = false
-        observer.disconnect()
-      }
-    })
-  }, {
-    threshold: 0
-  })
+  // const observer = new IntersectionObserver((entries) => {
+  //   entries.forEach((entry) => {
+  //     if (!entry.isIntersecting) {
+  //       setRenderQueue((prevState) => prevState.slice(1))
+  //       setSettings({...settings, animation: false})
+  //       setIsTranslated(false)
+  //       isNeedTranslate.current = false
+  //       observer.disconnect()
+  //     }
+  //   })
+  // }, {
+  //   threshold: 0
+  // })
 
 
   const showNextImageStrip = () => {
@@ -48,20 +64,21 @@ const Carousel = ({imageUrls, settings, setSettings}: CarouselProps) => {
     });
 
   };
-
+  console.log(renderQueue)
   const showNextImageDeque = () => {
     let i = 0
     setImageIndex((index) => {
       if (index === imageUrls.length - 1) {
-        i = index
-        return index;
+        i = 0
+      } else {
+        i = index + 1
       }
-      i = index + 1
-      return index + 1;
+      return i;
     });
-    setSettings({...settings, animation: true})
-    setRenderQueue((prevState) => [...prevState, imageUrls[i]])
-    isNeedTranslate.current = true
+    if (renderQueue.length !== imageUrls.length) {
+      setRenderQueue((prevState) => [...prevState, imageUrls[i + 1]])
+    }
+
   }
 
   useEffect(() => {
@@ -70,7 +87,7 @@ const Carousel = ({imageUrls, settings, setSettings}: CarouselProps) => {
       async function loop() {
         while (!canceled && settings.autoReplay) {
           await wait(settings.autoReplayDelay)
-          showNextImageStrip()
+          showNextImageDeque()
           if (settings.animation) {
             await wait(settings.animDuration)
           }
@@ -78,10 +95,10 @@ const Carousel = ({imageUrls, settings, setSettings}: CarouselProps) => {
       }
 
 
-      if (isNeedTranslate.current) {
-        setIsTranslated(true)
-        if (currentTarget.current) observer.observe(currentTarget.current)
-      }
+      // if (isNeedTranslate.current) {
+      //   setIsTranslated(true)
+      //   if (currentTarget.current) observer.observe(currentTarget.current)
+      // }
 
 
       loop()
@@ -89,7 +106,7 @@ const Carousel = ({imageUrls, settings, setSettings}: CarouselProps) => {
         canceled = true
       }
     },
-    [settings.autoReplay, settings.animation, isNeedTranslate.current])
+    [settings.autoReplay, settings.animation])
 
   return (
     <div style={{position: "relative", width: "640px", height: "auto"}}>
@@ -123,7 +140,7 @@ const Carousel = ({imageUrls, settings, setSettings}: CarouselProps) => {
             // ref={currentTarget}
             className="carousel-image"
             style={{
-              translate: isTranslated ? `-101% ` : '0%',
+              translate: `${-100 * imageIndex}%`,
               transition: settings.animation ? `translate ${settings.animDuration}ms ${settings.animationCurve}` : ''
             }}
           />
