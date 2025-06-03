@@ -94,7 +94,7 @@ const Carousel = ({imageUrls, settings, setSettings}: CarouselProps) => {
         }
       }
 
-      // fdfd
+      // fdfddfsdfdfdf
       // if (isNeedTranslate.current) {
       //   setIsTranslated(true)
       //   if (currentTarget.current) observer.observe(currentTarget.current)
